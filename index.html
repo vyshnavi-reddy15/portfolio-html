@@ -527,6 +527,28 @@ function drawLines(){
   drawLines();requestAnimationFrame(animate);
 })();
 
+  let arrowHold = null, arrowFill = 0;
+scrollArrow.addEventListener('touchstart', () => {
+  arrowFill = 0;
+  arrowHold = setInterval(() => {
+    arrowFill = Math.min(arrowFill + 2, 100);
+    document.getElementById('arrow-progress').style.strokeDashoffset = 100 - arrowFill;
+    if (arrowFill >= 100) {
+      clearInterval(arrowHold);
+      if (current < pages.length - 1) goTo(current + 1);
+      setTimeout(() => {
+        arrowFill = 0;
+        document.getElementById('arrow-progress').style.strokeDashoffset = 100;
+      }, 400);
+    }
+  }, 20);
+}, { passive: true });
+scrollArrow.addEventListener('touchend', () => {
+  clearInterval(arrowHold);
+  arrowFill = 0;
+  document.getElementById('arrow-progress').style.strokeDashoffset = 100;
+});
+  
 updateArrow();
 </script>
 </body>
