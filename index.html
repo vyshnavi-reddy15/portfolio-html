@@ -182,15 +182,58 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
 .btn-co:hover{border-color:#fff;background:rgba(255,255,255,.12);transform:translateY(-2px)}
 
 @media(max-width:900px){
-  body,html{overflow:auto;height:auto}
-  #sections{position:static;overflow:auto}
-  .page{position:static;opacity:1;pointer-events:all;transform:none!important;padding:5rem 1rem 2rem;min-height:100vh}
-  .card{padding:2rem 1.5rem;max-height:none}
-  .about-grid,.skills-grid,.proj-grid,.certs-grid{grid-template-columns:1fr}
-  .exp-card{grid-template-columns:1fr;gap:1rem}
-  #pill-nav{display:none}
+  body,html{overflow:auto;height:auto;cursor:auto}
   body,*{cursor:auto!important}
   #cur,#cur-ring{display:none}
+  #bg-canvas{position:fixed}
+  #sections{position:static}
+
+  .page{position:relative;opacity:1;pointer-events:all;transform:none!important;padding:4rem 1.25rem 2rem;min-height:100svh;display:flex;align-items:center;justify-content:center;}
+
+  .card{padding:2rem 1.5rem;max-height:none;border-radius:20px;}
+
+  #topbar{padding:1rem 1.25rem}
+  .tb-badge{display:none}
+
+  #pill-nav{display:flex;bottom:1rem;padding:.35rem .4rem;gap:.15rem;max-width:calc(100vw - 2rem);overflow-x:auto;scrollbar-width:none;}
+  #pill-nav::-webkit-scrollbar{display:none}
+  .pn-btn{padding:.45rem .7rem;font-size:.58rem;gap:.3rem;}
+  .pn-btn .pn-num{display:none}
+
+  #pg-counter{bottom:.3rem;font-size:.55rem}
+
+  #page-home .card{padding:2.5rem 1.5rem 2rem}
+  .home-sv{font-size:8rem}
+  .home-name{font-size:clamp(1.8rem,8vw,2.8rem)}
+  .home-role{font-size:1.1rem}
+  .home-desc{font-size:.88rem;max-width:100%}
+  .home-sub{font-size:.8rem;max-width:100%}
+  .home-btns{flex-direction:column;align-items:center;gap:.6rem}
+  .btn-primary,.btn-outline{width:100%;max-width:280px;justify-content:center}
+
+  #page-about .card{padding:2rem 1.25rem}
+  .about-grid{grid-template-columns:1fr;gap:1.5rem}
+  .about-title{font-size:1.8rem;margin-bottom:1.25rem}
+
+  #page-skills .card{padding:2rem 1.25rem}
+  .skills-grid{grid-template-columns:1fr 1fr;gap:.75rem}
+  .sk-card{padding:1rem 1.1rem}
+  .sec-title{font-size:1.8rem;margin-bottom:1.25rem}
+
+  #page-projects .card{padding:2rem 1.25rem}
+  .proj-grid{grid-template-columns:1fr;gap:1rem}
+
+  #page-experience .card{padding:2rem 1.25rem}
+  .exp-card{grid-template-columns:1fr;gap:.75rem;padding:1.5rem}
+
+  #page-certs .card{padding:2rem 1.25rem}
+  .certs-grid{grid-template-columns:1fr 1fr;gap:.75rem}
+  .cert-card{padding:.9rem 1rem}
+
+  #page-contact .card{padding:2.5rem 1.5rem}
+  .contact-title{font-size:2.2rem}
+  .contact-btns{flex-direction:column;align-items:center;gap:.6rem}
+  .btn-cw,.btn-co{width:100%;max-width:280px;justify-content:center}
 }
 </style>
 </head>
