@@ -368,7 +368,7 @@ const navBtns = document.querySelectorAll('.pn-btn');
 const counter = document.getElementById('pg-counter');
 const scrollArrow = document.getElementById('scroll-arrow');
 const upArrow = document.getElementById('up-arrow');
-const arrowProgress = document.getElementById('arrowProgress');
+const arrowProgress = document.getElementById('arrow-progress');
 let current = 0, transitioning = false;
 
 function updateArrow() {
@@ -534,13 +534,13 @@ scrollArrow.addEventListener('touchstart', () => {
   arrowFill = 0;
   arrowHold = setInterval(() => {
     arrowFill = Math.min(arrowFill + 2, 100.5);
-    document.getElementById('arrowProgress').style.strokeDashoffset = 100.5 - arrowFill;
+    arrowProgress.style.strokeDashoffset = 100.5 - arrowFill;
     if (arrowFill >= 100.5) {
       clearInterval(arrowHold);
       if (current < pages.length - 1) goTo(current + 1);
       setTimeout(() => {
         arrowFill = 0;
-        document.getElementById('arrowProgress').style.strokeDashoffset = 100.5;
+        arrowProgress.style.strokeDashoffset = 100.5;
       }, 400);
     }
   }, 20);
@@ -548,7 +548,7 @@ scrollArrow.addEventListener('touchstart', () => {
 scrollArrow.addEventListener('touchend', () => {
   clearInterval(arrowHold);
   arrowFill = 0;
-  document.getElementById('arrowProgress').style.strokeDashoffset = 100.5;
+  arrowProgress.style.strokeDashoffset = 100.5;
 });
   
   scrollArrow.classList.add('visible');
