@@ -177,18 +177,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
   .contact-btns{flex-direction:column;align-items:center;gap:.6rem}
   .btn-cw,.btn-co{width:100%;max-width:280px;justify-content:center}
 }
-  #scroll-arrow, #up-arrow {
-  transition: all 0.3s ease;
-}
-
-#scroll-arrow.visible, #up-arrow.visible {
-  opacity: 1;
-  pointer-events: all;
-}
-
-#arrow-progress {
-  transition: stroke-dashoffset 0.05s linear;
-}
 </style>
 </head>
 <body>
@@ -541,114 +529,31 @@ function drawLines(){
   drawLines();requestAnimationFrame(animate);
 })();
 
-<!-- Replace the existing arrow script at the bottom with this improved version -->
-
-<script>
-// Arrow Controls - FIXED
-const scrollArrow = document.getElementById('scroll-arrow');
-const upArrow = document.getElementById('up-arrow');
-const arrowProgress = document.getElementById('arrow-progress');
-
-let arrowHold = null;
-let arrowFill = 0;
-
-function updateArrows() {
-  const activePage = pages[current];
-  if (!activePage) return;
-
-  const scrollTop = activePage.scrollTop;
-  const scrollHeight = activePage.scrollHeight;
-  const clientHeight = activePage.clientHeight;
-
-  const isAtTop = scrollTop < 30;
-  const isAtBottom = (scrollHeight - scrollTop - clientHeight) < 30;
-
-  // Up Arrow
-  if (current > 0 && isAtTop) {
-    upArrow.classList.add('visible');
-  } else {
-    upArrow.classList.remove('visible');
-  }
-
-  // Down Arrow
-  if (current < pages.length - 1 && isAtBottom) {
-    scrollArrow.classList.add('visible');
-  } else {
-    scrollArrow.classList.remove('visible');
-  }
-}
-
-// Touch hold progress for scroll arrow
-function startArrowHold() {
+  let arrowHold = null, arrowFill = 0;
+scrollArrow.addEventListener('touchstart', () => {
   arrowFill = 0;
-  arrowProgress.style.strokeDashoffset = 100.5;
-
   arrowHold = setInterval(() => {
-    arrowFill += 3.5; // Faster fill
-    arrowProgress.style.strokeDashoffset = Math.max(100.5 - arrowFill, 0);
-
+    arrowFill = Math.min(arrowFill + 2, 100.5);
+    arrowProgress.style.strokeDashoffset = 100.5 - arrowFill;
     if (arrowFill >= 100.5) {
       clearInterval(arrowHold);
-      if (current < pages.length - 1) {
-        goTo(current + 1);
-      }
-      resetArrowProgress();
+      if (current < pages.length - 1) goTo(current + 1);
+      setTimeout(() => {
+        arrowFill = 0;
+        arrowProgress.style.strokeDashoffset = 100.5;
+      }, 400);
     }
-  }, 16);
-}
-
-function resetArrowProgress() {
-  arrowFill = 0;
-  arrowProgress.style.strokeDashoffset = 100.5;
-}
-
-// Event Listeners
-scrollArrow.addEventListener('mousedown', startArrowHold);
-scrollArrow.addEventListener('mouseup', () => {
-  clearInterval(arrowHold);
-  resetArrowProgress();
-});
-scrollArrow.addEventListener('mouseleave', () => {
-  clearInterval(arrowHold);
-  resetArrowProgress();
-});
-
-scrollArrow.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  startArrowHold();
-}, { passive: false });
-
+  }, 20);
+}, { passive: true });
 scrollArrow.addEventListener('touchend', () => {
   clearInterval(arrowHold);
-  resetArrowProgress();
+  arrowFill = 0;
+  arrowProgress.style.strokeDashoffset = 100.5;
 });
-
-// Click to scroll (normal click)
-scrollArrow.addEventListener('click', () => {
-  if (current < pages.length - 1) goTo(current + 1);
-});
-
-upArrow.addEventListener('click', () => {
-  if (current > 0) goTo(current - 1);
-});
-
-// Update arrows on scroll and page change
-pages.forEach(page => {
-  page.addEventListener('scroll', updateArrows);
-});
-
-// Update arrows after page transition
-const originalGoTo = goTo;
-window.goTo = function(idx) {
-  originalGoTo.call(window, idx);
-  setTimeout(updateArrows, 600); // Give time for transition
-};
-
-// Initial call
-setTimeout(() => {
-  updateArrows();
-}, 300);
-
+  
+  scrollArrow.classList.add('visible');
+updateArrow();
+  
 </script>
 </body>
 </html>
