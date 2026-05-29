@@ -188,14 +188,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
   #bg-canvas{position:fixed}
   #sections{position:fixed;inset:0;overflow:hidden}
 
- .page{position:absolute;inset:0;padding:4rem 1.25rem 5rem;display:flex;align-items:center;justify-content:center;overflow-y:auto;}
-
+ .page{position:absolute;inset:0;padding:6rem 1.25rem 5rem;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;}
   .card{padding:2rem 1.5rem;max-height:none;border-radius:20px;}
 
   #topbar{padding:1rem 1.25rem}
   .tb-badge{display:none}
 
- #pill-nav{display:flex;bottom:1rem;padding:.35rem .4rem;gap:.1rem;max-width:calc(100vw - 1.5rem);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+ #pill-nav{display:flex;bottom:1rem;padding:.35rem .4rem;gap:.1rem;width:calc(100vw - 1.5rem);max-width:600px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
   #pill-nav::-webkit-scrollbar{display:none}
   .pn-btn{padding:.45rem .7rem;font-size:.58rem;gap:.3rem;}
   .pn-btn .pn-num{display:none}
@@ -234,6 +233,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
   .contact-title{font-size:2.2rem}
   .contact-btns{flex-direction:column;align-items:center;gap:.6rem}
   .btn-cw,.btn-co{width:100%;max-width:280px;justify-content:center}
+
+  #scroll-arrow{position:fixed;bottom:5rem;right:1.5rem;z-index:300;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .3s}
+#scroll-arrow svg:first-child{position:absolute;width:18px;height:18px;color:var(--terra)}
+#arrow-ring{position:absolute;width:44px;height:44px}
+#scroll-arrow.visible{opacity:1}
 }
 </style>
 </head>
@@ -436,6 +440,7 @@ function goTo(idx) {
     next.classList.add('active');
     current = idx;
     navBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    navBtns[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
     const num = String(idx).padStart(2, '0');
     counter.textContent = num + ' / 06';
     transitioning = false;
@@ -605,6 +610,38 @@ function drawLines() {
   drawLines();
   requestAnimationFrame(animate);
 })();
+  const scrollArrow = document.getElementById('scroll-arrow');
+const arrowProgress = document.getElementById('arrow-progress');
+let arrowHold = null, arrowFill = 0;
+scrollArrow.addEventListener('touchstart', () => {
+  arrowFill = 0;
+  scrollArrow.classList.add('visible');
+  arrowHold = setInterval(() => {
+    arrowFill = Math.min(arrowFill + 2, 100);
+    arrowProgress.style.strokeDashoffset = 100 - arrowFill;
+    if (arrowFill >= 100) {
+      clearInterval(arrowHold);
+      if (current < pages.length - 1) goTo(current + 1);
+      setTimeout(() => { arrowFill = 0; arrowProgress.style.strokeDashoffset = 100; }, 400);
+    }
+  }, 20);
+}, { passive: true });
+scrollArrow.addEventListener('touchend', () => {
+  clearInterval(arrowHold);
+  arrowFill = 0;
+  arrowProgress.style.strokeDashoffset = 100;
+});
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('scroll', () => {
+    const atBottom = card.scrollHeight - card.scrollTop - card.clientHeight < 10;
+    if (atBottom && current < pages.length - 1) scrollArrow.classList.add('visible');
+    else scrollArrow.classList.remove('visible');
+  });
+});
 </script>
+  <div id="scroll-arrow" onclick="goTo(current+1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  <svg id="arrow-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="none" stroke="rgba(192,82,42,0.2)" stroke-width="2"/><circle id="arrow-progress" cx="18" cy="18" r="16" fill="none" stroke="#C0522A" stroke-width="2" stroke-dasharray="100" stroke-dashoffset="100" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg>
+</div>
 </body>
 </html>
