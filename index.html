@@ -129,6 +129,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
 #scroll-arrow svg:first-child{position:absolute;width:18px;height:18px;color:var(--terra)}
 #arrow-ring{position:absolute;width:44px;height:44px}
 #scroll-arrow.visible{opacity:1;pointer-events:all}
+  #up-arrow{position:fixed;top:5rem;left:1.5rem;z-index:300;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .3s;pointer-events:none}
+#up-arrow svg:first-child{position:absolute;width:18px;height:18px;color:var(--terra)}
+#up-arrow svg:last-child{position:absolute;width:44px;height:44px}
+#up-arrow.visible{opacity:1;pointer-events:all}
 
 @media(max-width:900px){
   body,html{overflow:auto;height:auto;cursor:auto}
@@ -350,26 +354,34 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
     <circle id="arrow-progress" cx="18" cy="18" r="16" fill="none" stroke="#C0522A" stroke-width="2" stroke-dasharray="100" stroke-dashoffset="100" stroke-linecap="round" transform="rotate(-90 18 18)"/>
   </svg>
 </div>
+<div id="up-arrow" onclick="if(current > 0) goTo(current-1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+  <svg viewBox="0 0 36 36">
+    <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(192,82,42,0.2)" stroke-width="2"/>
+  </svg>
+</div>
 
 <script>
 const pages = document.querySelectorAll('.page');
 const navBtns = document.querySelectorAll('.pn-btn');
 const counter = document.getElementById('pg-counter');
 const scrollArrow = document.getElementById('scroll-arrow');
-const arrowProgress = document.getElementById('arrow-progress');
+const upArrow = document.getElementById('up-arrow');
 let current = 0, transitioning = false;
 
 function updateArrow() {
-  if (current >= pages.length - 1) { scrollArrow.classList.remove('visible'); return; }
-  const card = pages[current].querySelector('.card');
-  if (!card) return;
-  const noScroll = card.scrollHeight <= card.clientHeight + 5;
-  const atBottom = card.scrollHeight - card.scrollTop - card.clientHeight < 10;
-  if (atBottom || noScroll) scrollArrow.classList.add('visible');
+  const activePage = pages[current];
+  const atBottom = activePage.scrollHeight - activePage.scrollTop - activePage.clientHeight < 15;
+  const atTop = activePage.scrollTop < 15;
+
+  if (current < pages.length - 1 && atBottom) scrollArrow.classList.add('visible');
   else scrollArrow.classList.remove('visible');
+
+  if (current > 0 && atTop) upArrow.classList.add('visible');
+  else upArrow.classList.remove('visible');
 }
 
-document.querySelectorAll('.card').forEach(c => c.addEventListener('scroll', updateArrow));
+pages.forEach(p => p.addEventListener('scroll', updateArrow));
 
 function goTo(idx) {
   if (idx === current || transitioning) return;
@@ -381,7 +393,9 @@ function goTo(idx) {
   old.classList.add(dir === 'up' ? 'exit-up' : 'exit-down');
   setTimeout(() => {
     old.classList.remove('exit-up', 'exit-down');
+    old.scrollTop = 0;
     next.classList.add('active');
+    next.scrollTop = 0;
     current = idx;
     navBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
     navBtns[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -407,14 +421,16 @@ window.addEventListener('touchstart', e => {
 }, { passive: true });
 window.addEventListener('touchend', e => {
   const diff = touchY - e.changedTouches[0].clientY;
-  if (Math.abs(diff) < 80) return;
-  const card = touchTarget && touchTarget.closest('.card');
-  if (card) {
-    if (diff > 0 && card.scrollHeight - card.scrollTop - card.clientHeight > 8) return;
-    if (diff < 0 && card.scrollTop > 8) return;
+  if (Math.abs(diff) < 60) return;
+  const activePage = pages[current];
+  if (diff > 0) {
+    const atBottom = activePage.scrollHeight - activePage.scrollTop - activePage.clientHeight < 15;
+    if (!atBottom) return;
+    if (current < pages.length - 1) goTo(current + 1);
+  } else {
+    if (activePage.scrollTop > 15) return;
+    if (current > 0) goTo(current - 1);
   }
-  if (diff > 0 && current < pages.length - 1) goTo(current + 1);
-  else if (diff < 0 && current > 0) goTo(current - 1);
 });
 
 window.addEventListener('keydown', e => {
@@ -450,65 +466,65 @@ window.addEventListener('resize', () => { resize(); initPts(); });
 class Pt {
   constructor() { this.reset(); }
   reset() {
-    this.x = Math.random() * W; this.y = Math.random() * H;
-    this.vx = (Math.random() - .5) * .3; this.vy = (Math.random() - .5) * .3;
-    this.r = Math.random() * 2 + .5;
-    this.col = COLORS[Math.floor(Math.random() * COLORS.length)];
-    this.a = Math.random() * .5 + .1;
-    this.life = 0; this.maxLife = 250 + Math.random() * 200;
+    this.x = Math.random()*W; this.y = Math.random()*H;
+    this.vx = (Math.random()-.5)*.3; this.vy = (Math.random()-.5)*.3;
+    this.r = Math.random()*2+.5;
+    this.col = COLORS[Math.floor(Math.random()*COLORS.length)];
+    this.a = Math.random()*.5+.1;
+    this.life = 0; this.maxLife = 250+Math.random()*200;
   }
   update() {
-    const dx = mx - this.x, dy = my - this.y, d = Math.sqrt(dx*dx + dy*dy);
-    if (d < 150) { const f = (150-d)/150; this.vx += dx/d*f*.05; this.vy += dy/d*f*.05; }
-    this.vx *= .97; this.vy *= .97;
-    this.x += this.vx; this.y += this.vy; this.life++;
-    if (this.life > this.maxLife || this.x < -20 || this.x > W+20 || this.y < -20 || this.y > H+20) this.reset();
+    const dx=mx-this.x, dy=my-this.y, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<150){const f=(150-d)/150; this.vx+=dx/d*f*.05; this.vy+=dy/d*f*.05;}
+    this.vx*=.97; this.vy*=.97;
+    this.x+=this.vx; this.y+=this.vy; this.life++;
+    if(this.life>this.maxLife||this.x<-20||this.x>W+20||this.y<-20||this.y>H+20) this.reset();
   }
   draw() {
-    const alpha = this.a * Math.sin(this.life / this.maxLife * Math.PI);
-    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(${this.col},${alpha})`; ctx.fill();
+    const alpha=this.a*Math.sin(this.life/this.maxLife*Math.PI);
+    ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${this.col},${alpha})`; ctx.fill();
   }
 }
-function initPts() { pts = []; const n = Math.min(Math.floor(W*H/8000),130); for(let i=0;i<n;i++) pts.push(new Pt()); }
+function initPts(){pts=[];const n=Math.min(Math.floor(W*H/8000),130);for(let i=0;i<n;i++)pts.push(new Pt());}
 initPts();
 
-const rings = [
+const rings=[
   {x:.15,y:.55,r:160,col:'192,82,42',a:.06},{x:.85,y:.35,r:200,col:'122,158,126',a:.04},
   {x:.5,y:.8,r:130,col:'192,82,42',a:.035},{x:.3,y:.2,r:90,col:'212,196,176',a:.08},
 ];
-let glowX = W/2, glowY = H/2;
+let glowX=W/2, glowY=H/2;
 
-function drawBg() {
-  const lg = ctx.createRadialGradient(.1*W,.5*H,0,.1*W,.5*H,.38*W);
-  lg.addColorStop(0,'rgba(210,120,90,0.65)'); lg.addColorStop(.5,'rgba(210,120,90,0.25)'); lg.addColorStop(1,'rgba(216,160,130,0)');
-  ctx.fillStyle = lg; ctx.fillRect(0,0,W,H);
-  const rg = ctx.createRadialGradient(.88*W,.45*H,0,.88*W,.45*H,.28*W);
-  rg.addColorStop(0,'rgba(150,185,150,0.35)'); rg.addColorStop(1,'rgba(170,195,170,0)');
-  ctx.fillStyle = rg; ctx.fillRect(0,0,W,H);
-  glowX += (mx-glowX)*.05; glowY += (my-glowY)*.05;
-  const gg = ctx.createRadialGradient(glowX,glowY,0,glowX,glowY,300);
-  gg.addColorStop(0,'rgba(192,82,42,0.06)'); gg.addColorStop(1,'rgba(192,82,42,0)');
-  ctx.fillStyle = gg; ctx.fillRect(0,0,W,H);
+function drawBg(){
+  const lg=ctx.createRadialGradient(.1*W,.5*H,0,.1*W,.5*H,.38*W);
+  lg.addColorStop(0,'rgba(210,120,90,0.65)');lg.addColorStop(.5,'rgba(210,120,90,0.25)');lg.addColorStop(1,'rgba(216,160,130,0)');
+  ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
+  const rg=ctx.createRadialGradient(.88*W,.45*H,0,.88*W,.45*H,.28*W);
+  rg.addColorStop(0,'rgba(150,185,150,0.35)');rg.addColorStop(1,'rgba(170,195,170,0)');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+  glowX+=(mx-glowX)*.05;glowY+=(my-glowY)*.05;
+  const gg=ctx.createRadialGradient(glowX,glowY,0,glowX,glowY,300);
+  gg.addColorStop(0,'rgba(192,82,42,0.06)');gg.addColorStop(1,'rgba(192,82,42,0)');
+  ctx.fillStyle=gg;ctx.fillRect(0,0,W,H);
 }
-function drawRings() {
-  rings.forEach(r => {
-    ctx.beginPath(); ctx.arc(r.x*W,r.y*H,r.r,0,Math.PI*2);
-    ctx.strokeStyle = `rgba(${r.col},${r.a})`; ctx.lineWidth=1; ctx.stroke();
-    ctx.beginPath(); ctx.arc(r.x*W,r.y*H,r.r*1.55,0,Math.PI*2);
-    ctx.strokeStyle = `rgba(${r.col},${r.a*.5})`; ctx.stroke();
+function drawRings(){
+  rings.forEach(r=>{
+    ctx.beginPath();ctx.arc(r.x*W,r.y*H,r.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${r.col},${r.a})`;ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.arc(r.x*W,r.y*H,r.r*1.55,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(${r.col},${r.a*.5})`;ctx.stroke();
   });
 }
-function drawLines() {
-  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
-    const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
-    if(d<90){ ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.strokeStyle=`rgba(192,82,42,${(1-d/90)*.08})`; ctx.lineWidth=.5; ctx.stroke(); }
+function drawLines(){
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<90){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(192,82,42,${(1-d/90)*.08})`;ctx.lineWidth=.5;ctx.stroke();}
   }
 }
-(function animate() {
-  ctx.clearRect(0,0,W,H); drawBg(); drawRings();
-  pts.forEach(p => { p.update(); p.draw(); });
-  drawLines(); requestAnimationFrame(animate);
+(function animate(){
+  ctx.clearRect(0,0,W,H);drawBg();drawRings();
+  pts.forEach(p=>{p.update();p.draw();});
+  drawLines();requestAnimationFrame(animate);
 })();
 
 updateArrow();
