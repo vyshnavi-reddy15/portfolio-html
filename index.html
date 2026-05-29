@@ -351,7 +351,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-seri
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
   <svg id="arrow-ring" viewBox="0 0 36 36">
     <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(192,82,42,0.2)" stroke-width="2"/>
-    <circle id="arrow-progress" cx="18" cy="18" r="16" fill="none" stroke="#C0522A" stroke-width="2" stroke-dasharray="100" stroke-dashoffset="100" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+   <circle id="arrow-progress" cx="18" cy="18" r="16" fill="none" stroke="#C0522A" stroke-width="2" stroke-dasharray="100.5" stroke-dashoffset="100.5" stroke-linecap="round" transform="rotate(-90 18 18)"/>
   </svg>
 </div>
 <div id="up-arrow" onclick="if(current > 0) goTo(current-1)">
@@ -531,14 +531,14 @@ function drawLines(){
 scrollArrow.addEventListener('touchstart', () => {
   arrowFill = 0;
   arrowHold = setInterval(() => {
-    arrowFill = Math.min(arrowFill + 2, 100);
-    document.getElementById('arrow-progress').style.strokeDashoffset = 100 - arrowFill;
-    if (arrowFill >= 100) {
+    arrowFill = Math.min(arrowFill + 2, 100.5);
+    document.getElementById('arrow-progress').style.strokeDashoffset = 100.5 - arrowFill;
+    if (arrowFill >= 100.5) {
       clearInterval(arrowHold);
       if (current < pages.length - 1) goTo(current + 1);
       setTimeout(() => {
         arrowFill = 0;
-        document.getElementById('arrow-progress').style.strokeDashoffset = 100;
+        document.getElementById('arrow-progress').style.strokeDashoffset = 100.5;
       }, 400);
     }
   }, 20);
@@ -549,7 +549,9 @@ scrollArrow.addEventListener('touchend', () => {
   document.getElementById('arrow-progress').style.strokeDashoffset = 100;
 });
   
+  scrollArrow.classList.add('visible');
 updateArrow();
+  
 </script>
 </body>
 </html>
