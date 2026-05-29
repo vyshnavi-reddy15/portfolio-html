@@ -427,6 +427,19 @@ const navBtns = document.querySelectorAll('.pn-btn');
 const counter = document.getElementById('pg-counter');
 let current = 0, transitioning = false;
 
+  function updateArrow() {
+  if (current >= pages.length - 1) { scrollArrow.classList.remove('visible'); return; }
+  const card = pages[current].querySelector('.card');
+  if (!card) return;
+  const noScroll = card.scrollHeight <= card.clientHeight + 5;
+  const atBottom = card.scrollHeight - card.scrollTop - card.clientHeight < 10;
+  if (atBottom || noScroll) scrollArrow.classList.add('visible');
+  else scrollArrow.classList.remove('visible');
+}
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('scroll', updateArrow);
+});
+  
 function goTo(idx) {
   if (idx === current || transitioning) return;
   transitioning = true;
@@ -443,8 +456,8 @@ function goTo(idx) {
     navBtns[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
     const num = String(idx).padStart(2, '0');
     counter.textContent = num + ' / 06';
-    transitioning = false;
-  }, 480);
+   transitioning = false;
+    updateArrow();
 }
 
 // Wheel scroll
