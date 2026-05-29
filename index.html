@@ -427,7 +427,7 @@ const navBtns = document.querySelectorAll('.pn-btn');
 const counter = document.getElementById('pg-counter');
 let current = 0, transitioning = false;
 
-  function updateArrow() {
+function updateArrow() {
   if (current >= pages.length - 1) { scrollArrow.classList.remove('visible'); return; }
   const card = pages[current].querySelector('.card');
   if (!card) return;
@@ -435,6 +435,8 @@ let current = 0, transitioning = false;
   const atBottom = card.scrollHeight - card.scrollTop - card.clientHeight < 10;
   if (atBottom || noScroll) scrollArrow.classList.add('visible');
   else scrollArrow.classList.remove('visible');
+}
+document.querySelectorAll('.card').forEach(c => c.addEventListener('scroll', updateArrow));
 }
 document.querySelectorAll('.card').forEach(card => {
   card.addEventListener('scroll', updateArrow);
@@ -479,11 +481,11 @@ window.addEventListener('touchstart', e => {
 }, { passive: true });
 window.addEventListener('touchend', e => {
   const diff = touchY - e.changedTouches[0].clientY;
-  if (Math.abs(diff) < 30) return;
+  if (Math.abs(diff) < 80) return;
   const card = touchTarget && touchTarget.closest('.card');
   if (card) {
-    if (diff > 0 && card.scrollHeight - card.scrollTop - card.clientHeight > 2) return;
-    if (diff < 0 && card.scrollTop > 2) return;
+    if (diff > 0 && card.scrollHeight - card.scrollTop - card.clientHeight > 8) return;
+    if (diff < 0 && card.scrollTop > 8) return;
   }
   if (diff > 0 && current < pages.length - 1) goTo(current + 1);
   else if (diff < 0 && current > 0) goTo(current - 1);
@@ -644,13 +646,17 @@ scrollArrow.addEventListener('touchend', () => {
   arrowFill = 0;
   arrowProgress.style.strokeDashoffset = 100;
 });
-document.querySelectorAll('.card').forEach(card => {
-  card.addEventListener('scroll', () => {
-    const atBottom = card.scrollHeight - card.scrollTop - card.clientHeight < 10;
-    if (atBottom && current < pages.length - 1) scrollArrow.classList.add('visible');
-    else scrollArrow.classList.remove('visible');
-  });
-});
+function updateArrow() {
+  if (current >= pages.length - 1) { scrollArrow.classList.remove('visible'); return; }
+  const card = pages[current].querySelector('.card');
+  if (!card) return;
+  const noScroll = card.scrollHeight <= card.clientHeight + 5;
+  const atBottom = card.scrollHeight - card.scrollTop - card.clientHeight < 10;
+  if (atBottom || noScroll) scrollArrow.classList.add('visible');
+  else scrollArrow.classList.remove('visible');
+}
+document.querySelectorAll('.card').forEach(c => c.addEventListener('scroll', updateArrow));
+updateArrow();
 </script>
   <div id="scroll-arrow" onclick="goTo(current+1)">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
